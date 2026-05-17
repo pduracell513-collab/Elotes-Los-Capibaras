@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Elotes Los Capibaras — Menú Digital</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fredoka:wght@400;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --primary-yellow: #ffcc00; 
+      --dark-brown: #4e342e;    
+      --accent-green: #7cb342;  
+      --light-yellow: #fff9c4;
+      --white: #ffffff;
+      --gray: #f5f5f5;
+      --font-main: 'DM Sans', sans-serif;
+      --font-logo: 'Fredoka', sans-serif;
+      --transition: 0.3s ease;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-main); background: var(--white); color: var(--dark-brown); line-height: 1.6; }
+
+    header {
+      position: sticky; top: 0; z-index: 1000;
+      background: var(--primary-yellow);
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 5%; border-bottom: 3px solid var(--dark-brown);
+    }
+    .logo-text { font-family: var(--font-logo); font-size: 22px; font-weight: 600; color: var(--dark-brown); text-decoration: none; }
+
+    .cart-btn {
+      background: var(--dark-brown); color: white; border: none;
+      padding: 8px 16px; border-radius: 25px; cursor: pointer;
+      font-weight: bold; display: flex; align-items: center; gap: 8px;
+    }
+
+    .hero {
+      background: var(--light-yellow); text-align: center;
+      padding: 40px 20px; border-bottom: 2px dashed var(--primary-yellow);
+    }
+    .hero h1 { font-family: var(--font-logo); font-size: 36px; color: var(--dark-brown); }
+
+    .filters {
+      display: flex; justify-content: center; gap: 10px; padding: 20px;
+      overflow-x: auto; background: white; position: sticky; top: 62px; z-index: 900;
+    }
+    .filter-btn {
+      background: var(--gray); border: 2px solid transparent;
+      padding: 8px 20px; border-radius: 20px; cursor: pointer;
+      white-space: nowrap; font-weight: 600; transition: var(--transition);
+    }
+    .filter-btn.active { background: var(--primary-yellow); border-color: var(--dark-brown); }
+
+    .products-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 25px; padding: 20px 5%;
+    }
+    .card {
+      border: 2px solid var(--gray); border-radius: 15px; overflow: hidden;
+      transition: var(--transition); display: flex; flex-direction: column; background: white;
+    }
+    .card:hover { transform: translateY(-5px); border-color: var(--primary-yellow); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    .card-img { width: 100%; aspect-ratio: 1/1; object-fit: cover; background: #eee; }
+    .card-content { padding: 15px; text-align: center; flex-grow: 1; }
+    .price { font-size: 24px; font-weight: 700; color: var(--accent-green); margin: 10px 0; }
+
+    .btn {
+      width: 100%; padding: 12px; border-radius: 8px; border: none;
+      cursor: pointer; font-weight: bold; margin-top: 8px; transition: var(--transition);
+    }
+    .btn-add { background: var(--primary-yellow); color: var(--dark-brown); }
+    .btn-now { background: var(--dark-brown); color: white; }
+
+    /* Secciones de Información */
+    .info-section { padding: 4rem 5%; text-align: center; border-top: 1px solid var(--gray); }
+    .map-container { max-width: 900px; margin: 0 auto 2rem; border-radius: 15px; overflow: hidden; border: 3px solid var(--primary-yellow); }
+    .social-links a { text-decoration: none; color: var(--dark-brown); font-weight: bold; margin: 0 15px; font-size: 18px; }
+
+    /* WhatsApp Float */
+    .wa-float {
+      position: fixed; bottom: 30px; right: 30px;
+      background: #25d366; width: 60px; height: 60px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 1001;
+    }
+
+    /* Carrito / Drawer */
+    .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: none; }
+    .drawer {
+      position: fixed; top: 0; right: 0; height: 100%; width: min(400px, 90%);
+      background: white; z-index: 2001; transform: translateX(100%);
+      transition: transform 0.3s ease; display: flex; flex-direction: column;
+    }
+    .drawer.open { transform: translateX(0); }
+    .drawer-header { padding: 20px; background: var(--dark-brown); color: white; display: flex; justify-content: space-between; }
+    .drawer-body { flex-grow: 1; overflow-y: auto; padding: 20px; }
+    .drawer-footer { padding: 20px; border-top: 1px solid var(--gray); }
+
+    /* Modal */
+    .modal {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+      display: none; align-items: center; justify-content: center; z-index: 3000;
+    }
+    .modal-content {
+      background: white; padding: 25px; border-radius: 15px;
+      width: min(500px, 95%); max-height: 85vh; overflow-y: auto;
+    }
+    .option-group { margin-bottom: 20px; padding: 10px; background: var(--gray); border-radius: 8px; }
+    .option-title { font-weight: bold; color: var(--dark-brown); margin-bottom: 10px; border-bottom: 2px solid var(--primary-yellow); }
+    label { display: block; padding: 5px 0; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="#" class="logo-text">ELOTES LOS CAPIBARAS</a>
+    <button class="cart-btn" onclick="toggleDrawer()">
+      Pedido <span id="cart-count" style="background:var(--primary-yellow); color:var(--dark-brown); padding:2px 8px; border-radius:10px; margin-left:5px">0</span>
+    </button>
+  </header>
+
+  <section class="hero">
+    <h1>🌽 ¡El Sabor que Enamora!</h1>
+    <p>Callejón Guadalupe Victoria SN, Bo. Santa Maria, Tehuantepec</p>
+    <p><strong>Horario:</strong> De 6 pm hasta agotar existencia</p>
+  </section>
+
+  <nav class="filters">
+    <button class="filter-btn active" onclick="filterMenu('todos', this)">Todos</button>
+    <button class="filter-btn" onclick="filterMenu('elotes', this)">Elotes</button>
+    <button class="filter-btn" onclick="filterMenu('esquites', this)">Esquites</button>
+    <button class="filter-btn" onclick="filterMenu('especialidades', this)">Especialidades</button>
+    <button class="filter-btn" onclick="filterMenu('combos', this)">Combos</button>
+  </nav>
+
+  <main class="products-grid" id="menu-container"></main>
+
+  <section class="info-section">
+    <h2 style="font-family: var(--font-logo); margin-bottom: 1.5rem;">Nuestra Ubicación</h2>
+    <div class="map-container">
+      <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3824.2345!2d-95.2345!3d16.3234!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTbCsDE5JzI0LjIiTiA5NcKwMTQnMDQuMiJX!5e0!3m2!1ses!2smx!4v1620000000000" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+    </div>
+    <p style="margin-bottom: 1rem;">Callejón Guadalupe Victoria SN, Bo. Santa Maria. Tehuantepec Oax.</p>
+  </section>
+
+  <section class="info-section" style="background: var(--light-yellow);">
+    <h2 style="font-family: var(--font-logo);">¡Síguenos!</h2>
+    <div class="social-links" style="margin-top: 1.5rem;">
+      <a href="https://facebook.com/elotesloscapibaras" target="_blank">🔵 Facebook</a>
+      <a href="https://instagram.com/capibaraelotes" target="_blank">📸 Instagram</a>
+    </div>
+  </section>
+
+  <div class="modal" id="topping-modal">
+    <div class="modal-content">
+      <h2 id="modal-title" style="font-family: var(--font-logo); color: var(--dark-brown);">Personaliza tu antojo</h2>
+      <div id="modal-options" style="margin-top: 15px;"></div>
+      <button class="btn btn-add" onclick="confirmarPersonalizacion()">Agregar al pedido</button>
+      <button class="btn btn-now" style="background:#ddd; color:#333" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
+
+  <div class="drawer-overlay" id="overlay" onclick="toggleDrawer()"></div>
+  <aside class="drawer" id="drawer">
+    <div class="drawer-header">
+      <h3>Mi Pedido</h3>
+      <button onclick="toggleDrawer()" style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">✕</button>
+    </div>
+    <div class="drawer-body" id="cart-items"></div>
+    <div class="drawer-footer">
+      <div style="display:flex; justify-content:space-between; margin-bottom:15px; font-size:20px; font-weight:bold;">
+        <span>Total:</span>
+        <span id="cart-total">$0</span>
+      </div>
+      <button class="btn btn-add" style="background:#25d366; color:white; font-size:16px" onclick="sendWhatsAppOrder()">Enviar pedido por WhatsApp</button>
+    </div>
+  </aside>
+
+  <a href="https://wa.me/5219711770218" class="wa-float" target="_blank">
+    <svg width="35" height="35" fill="white" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+  </a>
+
+  <script>
+    const WA_NUMBER = "5219711770218"; // Número oficial de las imágenes
+    
+    // Datos extraídos de las imágenes del menú
+    const TOPPINGS = ["Cacahuates Salados", "Cacahuates Japoneses", "Cacahuates Habanero", "Cacahuates Flamin", "Chapulines", "Queso de Nachos"];
+    const SABRITAS = ["Doritos Nachos", "Doritos Flamin Hot", "Cheetos Flamin Hot", "Tostitos Salsa Verde", "Takis Fuego", "Ruffles Queso", "Chips Fuego", "Sabritas Original"];
+    const MARUCHAN = ["Camarón y Chile Piquín", "Camarón Limón y Habanero", "Ramen Camarón y Habanero"];
+
+    const MENU = [
+      { id: 1, cat: 'elotes', nombre: "Elote Sencillo", precio: 20, desc: "Tradicional con mayonesa, queso y chile", img: "https://via.placeholder.com/300/FFCC00/4E342E?text=Elote+Sencillo" },
+      { id: 2, cat: 'elotes', nombre: "Elote Especial", precio: 30, desc: "Cubierto de toppings de sabritas", img: "https://via.placeholder.com/300/FFCC00/4E342E?text=Elote+Especial", needsSabritas: true },
+      { id: 3, cat: 'esquites', nombre: "Esquite Tradicional", precio: 30, desc: "Mayonesa, queso y chile", img: "https://via.placeholder.com/300/7CB342/FFFFFF?text=Esquite+Tradicional" },
+      { id: 4, cat: 'esquites', nombre: "Esquisopa", precio: 50, desc: "Maruchan con esquite y aderezos", img: "https://via.placeholder.com/300/4E342E/FFFFFF?text=Esquisopa", needsMaruchan: true },
+      { id: 5, cat: 'especialidades', nombre: "Sabriesquites", precio: 55, desc: "Esquites con Sabrita y cacahuates", img: "https://via.placeholder.com/300/7CB342/FFFFFF?text=Sabriesquites", needsSabritas: true, needsToppings: true },
+      { id: 6, cat: 'combos', nombre: "Combo Especial", precio: 80, desc: "Esquite + 2 Elotes sencillos + Sabrita", img: "https://via.placeholder.com/300/FFCC00/4E342E?text=Combo+Especial", needsSabritas: true },
+      { id: 7, cat: 'combos', nombre: "CapiCombo Especial", precio: 120, desc: "Esquisopa + Sabrita + Elote desgranado", img: "https://via.placeholder.com/300/FFCC00/4E342E?text=CapiCombo", needsSabritas: true, needsMaruchan: true }
+    ];
+
+    let carrito = [];
+    let itemEnEdicion = null;
+
+    function renderMenu(productos) {
+      const container = document.getElementById('menu-container');
+      container.innerHTML = productos.map(p => `
+        <div class="card">
+          <img src="${p.img}" class="card-img" alt="${p.nombre}">
+          <div class="card-content">
+            <h3>${p.nombre}</h3>
+            <p style="font-size:12px; color:gray">${p.desc}</p>
+            <div class="price">$${p.precio}</div>
+            <button class="btn btn-add" onclick="abrirPersonalizacion(${p.id})">Agregar al pedido</button>
+            <button class="btn btn-now" onclick="pedirDirecto(${p.id})">Pedir ahora</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterMenu(cat, btn) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const filtered = cat === 'todos' ? MENU : MENU.filter(p => p.cat === cat);
+      renderMenu(filtered);
+    }
+
+    function abrirPersonalizacion(id) {
+      const p = MENU.find(x => x.id === id);
+      itemEnEdicion = { ...p, toppingsSeleccionados: [], sabritaSeleccionada: '', maruchanSeleccionada: '' };
+      
+      const modal = document.getElementById('topping-modal');
+      const optionsContainer = document.getElementById('modal-options');
+      optionsContainer.innerHTML = '';
+
+      if (p.needsSabritas) {
+        optionsContainer.innerHTML += `<div class="option-group"><div class="option-title">🍟 Elige tu Sabrita:</div>` + 
+          SABRITAS.map(s => `<label><input type="radio" name="sabrita" onchange="itemEnEdicion.sabritaSeleccionada='${s}'"> ${s}</label>`).join('') + `</div>`;
+      }
+
+      if (p.needsMaruchan) {
+        optionsContainer.innerHTML += `<div class="option-group"><div class="option-title">🍜 Sabor de Maruchan:</div>` + 
+          MARUCHAN.map(m => `<label><input type="radio" name="maruchan" onchange="itemEnEdicion.maruchanSeleccionada='${m}'"> ${m}</label>`).join('') + `</div>`;
+      }
+
+      if (p.needsToppings || p.cat === 'especialidades') {
+        optionsContainer.innerHTML += `<div class="option-group"><div class="option-title">✨ Toppings (Opcional):</div>` + 
+          TOPPINGS.map(t => `<label><input type="checkbox" onchange="toggleTopping('${t}')"> ${t}</label>`).join('') + `</div>`;
+      }
+
+      if (optionsContainer.innerHTML === '') {
+        agregarAlCarritoDirecto(p);
+      } else {
+        modal.style.display = 'flex';
+      }
+    }
+
+    function toggleTopping(t) {
+      const idx = itemEnEdicion.toppingsSeleccionados.indexOf(t);
+      if (idx > -1) itemEnEdicion.toppingsSeleccionados.splice(idx, 1);
+      else itemEnEdicion.toppingsSeleccionados.push(t);
+    }
+
+    function confirmarPersonalizacion() {
+      if ((itemEnEdicion.needsSabritas && !itemEnEdicion.sabritaSeleccionada) || (itemEnEdicion.needsMaruchan && !itemEnEdicion.maruchanSeleccionada)) {
+        alert("Por favor selecciona una opción principal");
+        return;
+      }
+      carrito.push({ ...itemEnEdicion, cartId: Date.now() });
+      closeModal();
+      actualizarInterfaz();
+      toggleDrawer();
+    }
+
+    function agregarAlCarritoDirecto(p) {
+      carrito.push({ ...p, cartId: Date.now(), toppingsSeleccionados: [] });
+      actualizarInterfaz();
+      toggleDrawer();
+    }
+
+    function actualizarInterfaz() {
+      const container = document.getElementById('cart-items');
+      const count = document.getElementById('cart-count');
+      const totalEl = document.getElementById('cart-total');
+      let total = 0;
+      count.textContent = carrito.length;
+
+      container.innerHTML = carrito.map(item => {
+        total += item.precio;
+        return `
+          <div style="border-bottom:1px solid #eee; padding:10px 0;">
+            <div style="display:flex; justify-content:space-between">
+              <strong>${item.nombre}</strong>
+              <span>$${item.precio}</span>
+            </div>
+            <div style="font-size:11px; color:var(--dark-brown); opacity:0.8">
+              ${item.sabritaSeleccionada ? '🍟 Sabrita: ' + item.sabritaSeleccionada + '<br>' : ''}
+              ${item.maruchanSeleccionada ? '🍜 Maruchan: ' + item.maruchanSeleccionada + '<br>' : ''}
+              ${item.toppingsSeleccionados.length > 0 ? '✨ Toppings: ' + item.toppingsSeleccionados.join(', ') : ''}
+            </div>
+            <button onclick="removerDelCarrito(${item.cartId})" style="color:red; border:none; background:none; cursor:pointer; font-size:11px; margin-top:5px">Eliminar</button>
+          </div>
+        `;
+      }).join('');
+      totalEl.textContent = `$${total}`;
+    }
+
+    function removerDelCarrito(cartId) {
+      carrito = carrito.filter(i => i.cartId !== cartId);
+      actualizarInterfaz();
+    }
+
+    function toggleDrawer() {
+      const isOpen = document.getElementById('drawer').classList.toggle('open');
+      document.getElementById('overlay').style.display = isOpen ? 'block' : 'none';
+    }
+
+    function closeModal() { document.getElementById('topping-modal').style.display = 'none'; }
+
+    function sendWhatsAppOrder() {
+      if (carrito.length === 0) return;
+      let msg = "¡Hola Capibaras! 🐾 Quiero hacer un pedido:\n\n";
+      let total = 0;
+      carrito.forEach(i => {
+        msg += `🔸 *${i.nombre}* ($${i.precio})\n`;
+        if (i.sabritaSeleccionada) msg += `   - Sabrita: ${i.sabritaSeleccionada}\n`;
+        if (i.maruchanSeleccionada) msg += `   - Maruchan: ${i.maruchanSeleccionada}\n`;
+        if (i.toppingsSeleccionados.length > 0) msg += `   - Toppings: ${i.toppingsSeleccionados.join(', ')}\n`;
+        total += i.precio;
+      });
+      msg += `\n💰 *Total: $${total}*`;
+      window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    function pedirDirecto(id) { abrirPersonalizacion(id); }
+
+    // Carga Inicial
+    renderMenu(MENU);
+  </script>
+</body>
+</html>
